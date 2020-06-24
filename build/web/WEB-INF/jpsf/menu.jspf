@@ -1,0 +1,52 @@
+<%-- any content can be specified here e.g.: --%>
+<%@page import="database.DbConfig"%>
+<%@page import="model.Usuario"%>
+<%@ page pageEncoding="UTF-8" %>
+
+<%
+     String loginError = null;
+    if(request.getParameter("session.login")!=null){
+        String login = request.getParameter("user.login");
+        String password = request.getParameter("user.password");
+        try{
+            Usuario user = Usuario.buscaUsuario(login, password);
+            if(user==null){
+                loginError = "Login or password incorrect";
+            }else{
+                session.setAttribute("user.login", login);
+                session.setAttribute("user.name", user.getName());
+                response.sendRedirect("home.jsp");
+            }
+        }catch(Exception ex){
+            loginError = "Error: " + ex.getMessage();
+        }
+    }else if(request.getParameter("session.logoff")!=null){
+        session.removeAttribute("user.login");
+        session.removeAttribute("user.name");
+        response.sendRedirect("index.jsp");
+    }
+%>
+
+<h1 class="text-center">Quiz</h1>
+
+<%if(session.getAttribute("user.login")==null){%>
+    <form method="post">
+        Usuário: <input type="text" name="user.login"/>
+        Password: <input type="password" name="user.password"/>
+        <input type="submit" value="Entrar" name="session.login"/>
+    </form>
+    <%if(loginError != null){%>
+    <div style="color:red"><%= loginError %></div>
+    <%}%>
+<%}else{%>
+    <form>
+        || Bem vindo, <b><%= session.getAttribute("user.name") %></b>
+        <input type="submit" value="Sair" name="session.logoff"/>
+    </form>
+<%}%>
+
+<%if (DbConfig.exceptionMessage != null) {%>
+<h3 style="color:red"><%= DbConfig.exceptionMessage%></h3>
+<%}%>
+
+<hr/>
